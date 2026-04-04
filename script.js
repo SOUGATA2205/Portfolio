@@ -1,5 +1,5 @@
 /* =========================================================
-   SOUGATA SARKAR — PORTFOLIO JS v3  |  Premium 3D Edition
+   SOUGATA SARKAR — PORTFOLIO JS
    ========================================================= */
 "use strict";
 
