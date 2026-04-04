@@ -59,6 +59,7 @@ function initTyping() {
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
   let W, H, particles = [];
+  let mouse = { x: -2000, y: -2000 };
 
   function resize() {
     W = canvas.width = window.innerWidth;
@@ -66,6 +67,10 @@ function initTyping() {
   }
   resize();
   window.addEventListener("resize", resize, { passive: true });
+  window.addEventListener("mousemove", (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  }, { passive: true });
 
   function getAccentColor() {
     const theme = html.getAttribute("data-theme");
@@ -88,12 +93,36 @@ function initTyping() {
   function draw() {
     ctx.clearRect(0, 0, W, H);
     const rgb = getAccentColor();
+
     particles.forEach(p => {
-      p.x += p.vx; p.y += p.vy;
+      // Mouse Interaction
+      const dxSq = (mouse.x - p.x) ** 2;
+      const dySq = (mouse.y - p.y) ** 2;
+      const distSq = dxSq + dySq;
+      const minDist = 180;
+
+      if (distSq < minDist * minDist) {
+        const dist = Math.sqrt(distSq);
+        const force = (minDist - dist) / minDist;
+        // Subtle magnetic pull
+        p.vx += (mouse.x - p.x) * force * 0.015;
+        p.vy += (mouse.y - p.y) * force * 0.015;
+      }
+
+      // Movement
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Friction / Damping
+      p.vx *= 0.96;
+      p.vy *= 0.96;
+
+      // Wrap around bounds
       if (p.x < 0) p.x = W;
       if (p.x > W) p.x = 0;
       if (p.y < 0) p.y = H;
       if (p.y > H) p.y = 0;
+
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(${rgb},${p.alpha})`;
