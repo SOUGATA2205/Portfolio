@@ -1,6 +1,6 @@
 # Sougata Sarkar — Professional Portfolio
 
-![Portfolio Preview Showcase](assets/image.jpg)
+![Portfolio Preview Showcase](assets/image.png)
 
 > A high-performance, dynamic personal portfolio website demonstrating my skills, projects, and professional experience as an AI/ML Engineer.
 
