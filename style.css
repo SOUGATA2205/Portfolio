@@ -158,6 +158,19 @@ section + section::before {
   background: linear-gradient(90deg, transparent, var(--border-h), transparent);
   position: absolute; top: 0; left: 8%; right: 8%;
 }
+section + section::after {
+  content: '';
+  position: absolute; top: -1px; left: 8%; right: 8%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(var(--accent-rgb), 0.5) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer-divider 4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes shimmer-divider {
+  0%, 100% { background-position: 200% 0; opacity: 0; }
+  50%      { background-position: -200% 0; opacity: 1; }
+}
 
 /* ── SECTION LABELS ── */
 .section-label {
@@ -175,6 +188,21 @@ section + section::before {
   font-weight: 800; line-height: 1.1;
   margin-bottom: 56px; color: var(--text);
   letter-spacing: -0.02em;
+  position: relative;
+  display: inline-block;
+}
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px; left: 0;
+  width: 60px; height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  animation: glow-underline 3s ease-in-out infinite;
+}
+@keyframes glow-underline {
+  0%, 100% { width: 60px; box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.3); }
+  50%      { width: 100px; box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.6); }
 }
 
 .sub-heading {
@@ -207,6 +235,20 @@ section + section::before {
   opacity: 0; transition: opacity var(--t);
 }
 .btn:hover::after { opacity: 1; }
+
+/* Button Ripple */
+.btn-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(0);
+  animation: ripple-anim 0.6s ease-out forwards;
+  pointer-events: none;
+  z-index: 5;
+}
+@keyframes ripple-anim {
+  to { transform: scale(4); opacity: 0; }
+}
 
 .btn-primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-dim));
@@ -784,6 +826,29 @@ section + section::before {
 .project-card.featured { border-color: rgba(var(--accent-rgb), 0.25); }
 .project-card.hidden { display: none; }
 
+/* Project card holographic shine */
+.project-card .card-shine-sweep {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(var(--accent-rgb), 0.08) 45%,
+    rgba(255,255,255, 0.06) 50%,
+    rgba(var(--accent-rgb), 0.08) 55%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  pointer-events: none; z-index: 2;
+  transition: none;
+}
+.project-card:hover .card-shine-sweep {
+  animation: shine-sweep 0.8s ease forwards;
+}
+@keyframes shine-sweep {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
 .project-card-glow {
   position: absolute; inset: 0;
   background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.05) 0%, transparent 60%);
@@ -850,6 +915,10 @@ section + section::before {
   padding: 7px 14px; border-radius: 8px;
   font-size: 0.83rem; letter-spacing: 0.02em;
   transition: all var(--t); cursor: default;
+  opacity: 0; transform: translateY(12px);
+}
+.stag.stag-visible {
+  opacity: 1; transform: translateY(0);
 }
 .stag:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); transform: translateY(-2px); }
 .stag-primary {

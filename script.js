@@ -16,18 +16,39 @@ themeToggle.addEventListener("click", () => {
 
 /* ── 0. TYPING ANIMATION ── */
 function initTyping() {
+  const greeting = document.getElementById("hero-greeting");
   const name1 = document.getElementById("hero-name-1");
   const name2 = document.getElementById("hero-name-2");
   if (!name1 || !name2) return;
 
+  const textGreeting = greeting ? greeting.textContent.trim() : "";
   const text1 = name1.textContent;
   const text2 = name2.textContent;
   const cursorHTML = '<span class="hero-cursor">_</span>';
 
-  name1.innerHTML = cursorHTML;
+  let hasGreeting = greeting && textGreeting.length > 0;
+
+  if (hasGreeting) {
+    greeting.innerHTML = cursorHTML;
+    name1.textContent = "";
+  } else {
+    name1.innerHTML = cursorHTML;
+  }
   name2.textContent = "";
 
-  let i = 0, j = 0;
+  let g = 0, i = 0, j = 0;
+
+  function typeGreeting() {
+    if (g < textGreeting.length) {
+      greeting.innerHTML = textGreeting.substring(0, g + 1) + cursorHTML;
+      g++;
+      setTimeout(typeGreeting, 45); // Faster for greeting
+    } else {
+      greeting.innerHTML = textGreeting; // Remove cursor from greeting
+      name1.innerHTML = cursorHTML; // Start cursor on line 1
+      setTimeout(typeLine1, 150);
+    }
+  }
 
   function typeLine1() {
     if (i < text1.length) {
@@ -49,7 +70,11 @@ function initTyping() {
   }
 
   // Start after a delay so page logic/reveals can settle
-  setTimeout(typeLine1, 800);
+  if (hasGreeting) {
+    setTimeout(typeGreeting, 800);
+  } else {
+    setTimeout(typeLine1, 800);
+  }
 }
 
 
@@ -112,6 +137,13 @@ function initTyping() {
       // Movement
       p.x += p.vx;
       p.y += p.vy;
+
+      // Scroll-reactive: scatter particles on fast scroll
+      const sv = (window._scrollVelocity || 0) * 0.02;
+      if (sv > 0.1) {
+        p.vx += (Math.random() - 0.5) * sv;
+        p.vy += (Math.random() - 0.5) * sv;
+      }
 
       // Friction / Damping
       p.vx *= 0.96;
@@ -467,4 +499,140 @@ document.querySelectorAll(".skill-category, .lang-card, .project-card").forEach(
 document.addEventListener("DOMContentLoaded", () => {
   updateActiveNav();
   initTyping();
+  initStatCounters();
+  initStagReveal();
+  initCardShine();
+  initButtonRipple();
 });
+
+/* ── 14. ANIMATED STAT COUNTERS ── */
+function initStatCounters() {
+  const statVals = document.querySelectorAll(".cstat-val");
+  if (!statVals.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        if (el.dataset.counted) return;
+        el.dataset.counted = "true";
+        const original = el.textContent.trim();
+
+        // Extract number and suffix (e.g. "6+" -> 6, "+")
+        const match = original.match(/^(\d+)(.*)/);
+        if (match) {
+          const target = parseInt(match[1], 10);
+          const suffix = match[2]; // "+", "rd", etc.
+          let current = 0;
+          const duration = 1200;
+          const increment = target / (duration / 30);
+          const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+              current = target;
+              clearInterval(timer);
+            }
+            el.textContent = Math.round(current) + suffix;
+          }, 30);
+        }
+        // For text-only like "3rd" — still animate with a quick flash effect
+        else {
+          el.style.opacity = "0";
+          el.style.transform = "scale(0.5)";
+          el.style.transition = "opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1)";
+          requestAnimationFrame(() => {
+            el.style.opacity = "1";
+            el.style.transform = "scale(1)";
+          });
+        }
+        observer.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  statVals.forEach(el => observer.observe(el));
+}
+
+/* ── 15. STAGGERED SKILL TAG REVEAL ── */
+function initStagReveal() {
+  const categories = document.querySelectorAll(".skill-category");
+  if (!categories.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const tags = entry.target.querySelectorAll(".stag");
+        tags.forEach((tag, i) => {
+          setTimeout(() => {
+            tag.classList.add("stag-visible");
+          }, i * 60);
+        });
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  categories.forEach(cat => observer.observe(cat));
+}
+
+/* ── 16. PROJECT CARD SHINE SWEEP ── */
+function initCardShine() {
+  document.querySelectorAll(".project-card").forEach(card => {
+    // Inject the shine overlay div
+    const shine = document.createElement("div");
+    shine.classList.add("card-shine-sweep");
+    card.appendChild(shine);
+
+    // Reset animation on every hover
+    card.addEventListener("mouseenter", () => {
+      shine.style.animation = "none";
+      void shine.offsetHeight; // Force reflow
+      shine.style.animation = "shine-sweep 0.8s ease forwards";
+    });
+  });
+}
+
+/* ── 17. BUTTON RIPPLE EFFECT ── */
+function initButtonRipple() {
+  document.querySelectorAll(".btn").forEach(btn => {
+    btn.addEventListener("click", function (e) {
+      // Remove any existing ripple
+      const old = this.querySelector(".btn-ripple");
+      if (old) old.remove();
+
+      const ripple = document.createElement("span");
+      ripple.classList.add("btn-ripple");
+
+      const rect = this.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      ripple.style.width = ripple.style.height = size + "px";
+      ripple.style.left = (e.clientX - rect.left - size / 2) + "px";
+      ripple.style.top = (e.clientY - rect.top - size / 2) + "px";
+
+      this.appendChild(ripple);
+
+      // Auto-remove after animation
+      ripple.addEventListener("animationend", () => ripple.remove());
+    });
+  });
+}
+
+/* ── 18. SCROLL-REACTIVE PARTICLES ── */
+(function initScrollParticles() {
+  let lastScrollY = window.scrollY;
+  let scrollVelocity = 0;
+
+  window.addEventListener("scroll", () => {
+    const currentY = window.scrollY;
+    scrollVelocity = Math.abs(currentY - lastScrollY);
+    lastScrollY = currentY;
+  }, { passive: true });
+
+  // Expose scrollVelocity to the existing particle system
+  // by patching into the particle draw loop via a global
+  window._scrollVelocity = 0;
+  setInterval(() => {
+    window._scrollVelocity = scrollVelocity;
+    scrollVelocity *= 0.9; // Decay
+  }, 50);
+})();
