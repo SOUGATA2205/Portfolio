@@ -6,12 +6,38 @@
 /* ── 1. THEME ── */
 const html = document.documentElement;
 const themeToggle = document.getElementById("theme-toggle");
-const savedTheme = localStorage.getItem("portfolio-theme") || "dark";
-html.setAttribute("data-theme", savedTheme);
+
+const getPreferredTheme = () => {
+  const saved = localStorage.getItem("portfolio-theme");
+  if (saved) return saved;
+  // If no saved preference, use system preference
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+};
+
+// Apply theme
+const applyTheme = (theme) => {
+  html.setAttribute("data-theme", theme);
+  const event = new CustomEvent('themeChanged', { detail: { theme } });
+  document.dispatchEvent(event);
+};
+
+// Initial application
+applyTheme(getPreferredTheme());
+
+// Toggle click
 themeToggle.addEventListener("click", () => {
-  const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
-  html.setAttribute("data-theme", next);
+  const current = html.getAttribute("data-theme");
+  const next = current === "dark" ? "light" : "dark";
+  applyTheme(next);
   localStorage.setItem("portfolio-theme", next);
+});
+
+// Listen for system changes in real-time
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
+  // Only override if user hasn't explicitly set a preference
+  if (!localStorage.getItem("portfolio-theme")) {
+    applyTheme(e.matches ? "dark" : "light");
+  }
 });
 
 /* ── 0. TYPING ANIMATION ── */
@@ -86,11 +112,18 @@ function initTyping() {
   let W, H, particles = [];
   let mouse = { x: -2000, y: -2000 };
 
+  let resizeTimer;
   function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }, 150);
   }
-  resize();
+  // Initial size setup doesn't need delay
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  
   window.addEventListener("resize", resize, { passive: true });
   window.addEventListener("mousemove", (e) => {
     mouse.x = e.clientX;
@@ -482,8 +515,8 @@ if (backToTop) {
   backToTop.style.transition = "opacity 0.3s, transform 0.3s";
 }
 
-/* ── 12. SKILL CARD 3D HOVER ── */
-document.querySelectorAll(".skill-category, .lang-card, .project-card").forEach(card => {
+/* ── 12. SKILL CARD/GLOBAL 3D HOVER ── */
+document.querySelectorAll(".skill-category, .lang-card, .project-card, .timeline-card, .cert-item").forEach(card => {
   card.addEventListener("mousemove", e => {
     const rect = card.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width - 0.5) * 8;
@@ -575,13 +608,16 @@ function initStagReveal() {
   categories.forEach(cat => observer.observe(cat));
 }
 
-/* ── 16. PROJECT CARD SHINE SWEEP ── */
+/* ── 16. CARD SHINE SWEEP ── */
 function initCardShine() {
-  document.querySelectorAll(".project-card").forEach(card => {
-    // Inject the shine overlay div
-    const shine = document.createElement("div");
-    shine.classList.add("card-shine-sweep");
-    card.appendChild(shine);
+  document.querySelectorAll(".project-card, .skill-category, .lang-card, .timeline-card, .cert-item").forEach(card => {
+    // Ensure the shine overlay div exists (if not already in HTML)
+    let shine = card.querySelector(".card-shine-sweep");
+    if (!shine) {
+      shine = document.createElement("div");
+      shine.classList.add("card-shine-sweep");
+      card.appendChild(shine);
+    }
 
     // Reset animation on every hover
     card.addEventListener("mouseenter", () => {
