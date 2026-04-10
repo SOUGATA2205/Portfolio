@@ -10,8 +10,8 @@ const themeToggle = document.getElementById("theme-toggle");
 const getPreferredTheme = () => {
   const saved = localStorage.getItem("portfolio-theme");
   if (saved) return saved;
-  // If no saved preference, use system preference
-  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  // Default to light mode
+  return "light";
 };
 
 // Apply theme
@@ -30,14 +30,6 @@ themeToggle.addEventListener("click", () => {
   const next = current === "dark" ? "light" : "dark";
   applyTheme(next);
   localStorage.setItem("portfolio-theme", next);
-});
-
-// Listen for system changes in real-time
-window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
-  // Only override if user hasn't explicitly set a preference
-  if (!localStorage.getItem("portfolio-theme")) {
-    applyTheme(e.matches ? "dark" : "light");
-  }
 });
 
 /* ── 0. TYPING ANIMATION ── */
