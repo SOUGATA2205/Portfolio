@@ -32,6 +32,14 @@ themeToggle.addEventListener("click", () => {
   localStorage.setItem("portfolio-theme", next);
 });
 
+// Listen for system changes in real-time
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
+  // Only override if user hasn't explicitly set a preference
+  if (!localStorage.getItem("portfolio-theme")) {
+    applyTheme(e.matches ? "dark" : "light");
+  }
+});
+
 /* ── 0. TYPING ANIMATION ── */
 function initTyping() {
   const greeting = document.getElementById("hero-greeting");
@@ -115,7 +123,7 @@ function initTyping() {
   // Initial size setup doesn't need delay
   W = canvas.width = window.innerWidth;
   H = canvas.height = window.innerHeight;
-  
+
   window.addEventListener("resize", resize, { passive: true });
   window.addEventListener("mousemove", (e) => {
     mouse.x = e.clientX;

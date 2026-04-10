@@ -1046,13 +1046,14 @@ section + section::after {
 .lang-info { flex: 1; }
 .lang-name { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
 .lang-native-text {
-  font-size: 0.85rem; color: var(--accent); opacity: 0.7;
-  margin-bottom: 10px; font-weight: 400;
+  font-size: 0.85rem; color: var(--accent); opacity: 0.8;
+  margin-bottom: 24px; font-weight: 400;
+  height: 1.2rem;
 }
-.lang-skills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.lang-skills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
 .lang-skill {
   display: inline-flex; align-items: center; gap: 6px;
-  font-family: var(--font-mono); font-size: 0.72rem; line-height: 1;
+  font-family: var(--font-mono); font-size: 0.7rem; line-height: 1;
   background: var(--bg-2); color: var(--text-muted);
   border: 1px solid var(--border); padding: 5px 12px;
   border-radius: 100px; letter-spacing: 0.05em;
@@ -1073,7 +1074,6 @@ section + section::after {
   background: rgba(var(--accent-rgb), 0.08);
   color: var(--accent); border: 1px solid rgba(var(--accent-rgb), 0.2);
   padding: 5px 12px; border-radius: 100px;
-  margin-left: auto;
 }
 .lang-level-native {
   background: rgba(var(--accent-2-rgb), 0.1);
